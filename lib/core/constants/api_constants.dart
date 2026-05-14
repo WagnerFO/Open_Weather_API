@@ -1,0 +1,14 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+class ApiConstants {
+  static String get apiKey => dotenv.env['OPENWEATHER_API_KEY'] ?? '';
+
+  static const String baseUrl = 'https://api.openweathermap.org/data/3.0';
+
+  static String oneCall({required double lat, required double lon}) =>
+      '$baseUrl/onecall?lat=$lat&lon=$lon'
+      '&exclude=minutely'
+      '&appid=$apiKey'
+      '&units=metric'
+      '&lang=pt_br';
+}
