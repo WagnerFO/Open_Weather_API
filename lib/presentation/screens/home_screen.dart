@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/core/helpers/weather_icon_helper.dart';
 import 'package:flutter_application/data/models/weather_model.dart';
+import 'package:flutter_application/data/repositories/weather_repository.dart';
 import 'package:flutter_application/domain/providers/weather_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -21,7 +23,6 @@ class HomeScreen extends ConsumerWidget {
   }
 }
 
-//────Loading────────
 class _LoadingView extends StatelessWidget {
   const _LoadingView();
 
@@ -36,7 +37,6 @@ class _LoadingView extends StatelessWidget {
   }
 }
 
-//────Error────────
 class _ErrorView extends StatelessWidget {
   final String message;
   const _ErrorView({required this.message});
@@ -47,7 +47,6 @@ class _ErrorView extends StatelessWidget {
   }
 }
 
-//────Main View─────
 class _WeatherView extends StatefulWidget {
   final WeatherModel weather;
   const _WeatherView({required this.weather});
@@ -103,7 +102,6 @@ class _WeatherViewState extends State<_WeatherView> {
   }
 }
 
-//──Blue Header─────
 class _BlueHeader extends StatelessWidget {
   final WeatherModel weather;
   const _BlueHeader({super.key, required this.weather});
@@ -130,15 +128,11 @@ class _BlueHeader extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () {
-                  /*Abrir Edge Menu*/
-                },
+                onPressed: () {},
               ),
               IconButton(
                 icon: const Icon(Icons.person_outline, color: Colors.white),
-                onPressed: () {
-                  /*Perfil*/
-                },
+                onPressed: () {},
               ),
             ],
           ),
@@ -196,12 +190,10 @@ class _BlueHeader extends StatelessWidget {
                   ],
                 ),
               ),
-              Image.network(
-                weather.current.iconUrl,
-                width: 72,
-                height: 72,
-                errorBuilder: (_, __, ___) =>
-                    const Icon(Icons.wb_sunny, color: Colors.yellow, size: 60),
+              Icon(
+                WeatherIconHelper.getIcon(weather.current.icon),
+                color: WeatherIconHelper.getColor(weather.current.icon),
+                size: 60,
               ),
             ],
           ),
@@ -279,40 +271,196 @@ class _StatPill extends StatelessWidget {
   }
 }
 
-class _SearchBar extends StatelessWidget {
+class _SearchBar extends ConsumerStatefulWidget {
   const _SearchBar();
 
   @override
+  ConsumerState<_SearchBar> createState() => _SearchBarState();
+}
+
+class _SearchBarState extends ConsumerState<_SearchBar> {
+  final _controller = TextEditingController();
+  final _focusNode = FocusNode();
+  List<CitySuggestion> _suggestions = [];
+  bool _loading = false;
+  bool _showSuggestions = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(() {
+      if (!_focusNode.hasFocus) {
+        Future.delayed(const Duration(milliseconds: 150), () {
+          if (mounted) setState(() => _showSuggestions = false);
+        });
+      }
+    });
+  }
+
+  Future<void> _onTextChanged(String text) async {
+    final trimmed = text.trim();
+
+    if (trimmed.length < 2) {
+      setState(() {
+        _suggestions = [];
+        _showSuggestions = false;
+      });
+      return;
+    }
+
+    setState(() => _loading = true);
+
+    try {
+      final repo = ref.read(weatherRepositoryProvider);
+      final results = await repo.fetchCitySuggestions(trimmed);
+      print('🔍 Buscando: $trimmed — ${results.length} resultados');
+      if (mounted) {
+        setState(() {
+          _suggestions = results;
+          _showSuggestions = results.isNotEmpty;
+          _loading = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Erro: $e');
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  void _selectCity(CitySuggestion city) {
+    _controller.text = city.displayName;
+    _focusNode.unfocus();
+    setState(() => _showSuggestions = false);
+    ref.read(selectedLocationProvider.notifier).state = {
+      'lat': city.lat,
+      'lon': city.lon,
+    };
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: TextField(
-        decoration: InputDecoration(
-          hintText: 'Buscar Cidade...',
-          hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-          prefixIcon: const Icon(Icons.search, color: Colors.grey, size: 20),
-          suffixIcon: const Icon(
-            Icons.location_on_outlined,
-            color: Colors.grey,
-            size: 20,
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 12,
-            horizontal: 16,
+          child: TextField(
+            controller: _controller,
+            focusNode: _focusNode,
+            keyboardType: TextInputType.text,
+            autocorrect: false,
+            enableSuggestions: false,
+            textInputAction: TextInputAction.search,
+            onChanged: _onTextChanged,
+            decoration: InputDecoration(
+              hintText: 'Buscar Cidade...',
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+              prefixIcon: const Icon(
+                Icons.search,
+                color: Colors.grey,
+                size: 20,
+              ),
+              suffixIcon: _loading
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Color(0xFF1565C0),
+                        ),
+                      ),
+                    )
+                  : _controller.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(
+                        Icons.clear,
+                        color: Colors.grey,
+                        size: 20,
+                      ),
+                      onPressed: () {
+                        _controller.clear();
+                        setState(() => _showSuggestions = false);
+                      },
+                    )
+                  : null,
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 12,
+                horizontal: 16,
+              ),
+            ),
           ),
         ),
-      ),
+        if (_showSuggestions)
+          Container(
+            margin: const EdgeInsets.only(top: 4),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.10),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Column(
+                children: _suggestions.map((city) {
+                  return InkWell(
+                    onTap: () => _selectCity(city),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.location_on_outlined,
+                            color: Color(0xFF1565C0),
+                            size: 18,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              city.displayName,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF333333),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+      ],
     );
   }
 }
@@ -350,7 +498,6 @@ class _BottomSheet extends StatelessWidget {
               ),
             ),
           ),
-          // espaço reservado para a search bar flutuante
           const SizedBox(height: 28),
           Container(
             padding: const EdgeInsets.all(3),
@@ -374,42 +521,143 @@ class _BottomSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          SizedBox(
-            height: 96,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: weather.hourly.take(8).length,
-              separatorBuilder: (_, __) => const SizedBox(width: 8),
-              itemBuilder: (_, i) {
-                final h = weather.hourly[i];
-                return _HourCard(hour: h, isNow: i == 0);
-              },
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'PRÓXIMOS DIAS',
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: Colors.grey,
-              letterSpacing: 0.8,
-            ),
-          ),
-          const SizedBox(height: 8),
           Expanded(
-            child: ListView.separated(
-              itemCount: weather.daily.take(5).length,
-              separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: Color(0xFFEEEEEE)),
-              itemBuilder: (_, i) {
-                final d = weather.daily[i + 1];
-                return _DailyRow(day: d);
-              },
+            child: showHourly
+                ? _HourlyView(weather: weather)
+                : _WeeklyView(weather: weather),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _WeatherRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final String rightText;
+  final bool highlight;
+
+  const _WeatherRow({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.rightText,
+    this.highlight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final titleColor = highlight
+        ? const Color(0xFF1565C0)
+        : const Color(0xFF222222);
+    final rightColor = highlight
+        ? const Color(0xFF1565C0)
+        : const Color(0xFF222222);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Row(
+        children: [
+          Container(
+            width: 48,
+            height: 48,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: iconColor, size: 28),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                    color: titleColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            rightText,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w800,
+              color: rightColor,
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HourlyView extends StatelessWidget {
+  final WeatherModel weather;
+  const _HourlyView({required this.weather});
+
+  @override
+  Widget build(BuildContext context) {
+    final hours = weather.hourly.take(5).toList();
+
+    return ListView.separated(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: hours.length,
+      separatorBuilder: (_, __) =>
+          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+      itemBuilder: (_, i) {
+        final h = hours[i];
+        final label = i == 0 ? 'Agora' : DateFormat('HH\'h\'').format(h.time);
+        return _WeatherRow(
+          icon: WeatherIconHelper.getIcon(h.icon),
+          iconColor: WeatherIconHelper.getColor(h.icon),
+          title: label,
+          subtitle: h.description,
+          rightText: '${h.temp.round()}°',
+          highlight: i == 0,
+        );
+      },
+    );
+  }
+}
+
+class _WeeklyView extends StatelessWidget {
+  final WeatherModel weather;
+  const _WeeklyView({required this.weather});
+
+  @override
+  Widget build(BuildContext context) {
+    final days = weather.daily.skip(1).take(7).toList();
+
+    return ListView.separated(
+      itemCount: days.length,
+      separatorBuilder: (_, __) =>
+          const Divider(height: 1, color: Color(0xFFEEEEEE)),
+      itemBuilder: (_, i) {
+        final d = days[i];
+        final dayName = DateFormat('EEEE', 'pt_BR').format(d.date);
+        return _WeatherRow(
+          icon: WeatherIconHelper.getIcon(d.icon),
+          iconColor: WeatherIconHelper.getColor(d.icon),
+          title: dayName,
+          subtitle: d.description,
+          rightText: '${d.tempMax.round()}° / ${d.tempMin.round()}°',
+        );
+      },
     );
   }
 }
@@ -451,104 +699,6 @@ class _Tab extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _HourCard extends StatelessWidget {
-  final HourlyWeather hour;
-  final bool isNow;
-
-  const _HourCard({required this.hour, required this.isNow});
-
-  @override
-  Widget build(BuildContext context) {
-    final label = isNow ? 'Agora' : DateFormat('HH\'h\'').format(hour.time);
-
-    return Container(
-      width: 70,
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
-      decoration: BoxDecoration(
-        color: isNow ? const Color(0xFF1565C0) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: isNow ? Colors.white70 : Colors.grey,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Image.network(
-            hour.iconUrl,
-            width: 28,
-            height: 28,
-            errorBuilder: (_, __, ___) => Icon(
-              Icons.wb_sunny,
-              color: isNow ? Colors.white : Colors.orange,
-              size: 24,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${hour.temp.round()}°',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: isNow ? Colors.white : Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DailyRow extends StatelessWidget {
-  final DailyWeather day;
-  const _DailyRow({required this.day});
-
-  @override
-  Widget build(BuildContext context) {
-    final dayName = DateFormat('EEE', 'pt_BR').format(day.date);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 36,
-            child: Text(
-              dayName,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF444444),
-              ),
-            ),
-          ),
-          Image.network(
-            day.iconUrl,
-            width: 28,
-            height: 28,
-            errorBuilder: (_, __, ___) =>
-                const Icon(Icons.wb_sunny, color: Colors.orange, size: 24),
-          ),
-          const Spacer(),
-          Text(
-            '${day.tempMax.round()}° / ${day.tempMin.round()}°',
-            style: const TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF555555),
-            ),
-          ),
-        ],
       ),
     );
   }

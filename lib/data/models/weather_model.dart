@@ -48,14 +48,17 @@ class CurrentWeather {
 
   String get iconUrl => 'https://openweathermap.org/img/wn/$icon@2x.png';
 
-  factory CurrentWeather.fromJson(Map<String, dynamic> json) => CurrentWeather(
-    temp: (json['temp'] as num).toDouble(),
-    feelsLike: (json['feels_like'] as num).toDouble(),
-    humidity: json['humidity'] as int,
-    windSpeed: (json['wind_speed'] as num).toDouble(),
-    description: json['weather'][0]['description'] ?? '',
-    icon: json['weather'][0]['icon'] ?? '',
-  );
+  factory CurrentWeather.fromJson(Map<String, dynamic> json) {
+    final weather = (json['weather'] as List?)?.firstOrNull;
+    return CurrentWeather(
+      temp: (json['temp'] as num).toDouble(),
+      feelsLike: (json['feels_like'] as num).toDouble(),
+      humidity: json['humidity'] as int,
+      windSpeed: (json['wind_speed'] as num).toDouble(),
+      description: weather?['description'] as String? ?? '',
+      icon: weather?['icon'] as String? ?? '01d',
+    );
+  }
 }
 
 class DailyWeather {
@@ -75,27 +78,41 @@ class DailyWeather {
 
   String get iconUrl => 'https://openweathermap.org/img/wn/$icon@2x.png';
 
-  factory DailyWeather.fromJson(Map<String, dynamic> json) => DailyWeather(
-    date: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
-    tempMin: (json['temp']['min'] as num).toDouble(),
-    tempMax: (json['temp']['max'] as num).toDouble(),
-    description: json['weather'][0]['description'] ?? '',
-    icon: json['weather'][0]['icon'] ?? '',
-  );
+  factory DailyWeather.fromJson(Map<String, dynamic> json) {
+    final weather = (json['weather'] as List?)?.firstOrNull;
+    return DailyWeather(
+      date: DateTime.fromMillisecondsSinceEpoch(
+        (json['dt'] as num).toInt() * 1000,
+      ),
+      tempMin: (json['temp']['min'] as num).toDouble(),
+      tempMax: (json['temp']['max'] as num).toDouble(),
+      description: weather?['description'] as String? ?? '',
+      icon: weather?['icon'] as String? ?? '01d',
+    );
+  }
 }
 
 class HourlyWeather {
   final DateTime time;
   final double temp;
   final String icon;
+  final String description;
+  HourlyWeather({
+    required this.time,
+    required this.temp,
+    required this.icon,
+    required this.description,
+  });
 
-  HourlyWeather({required this.time, required this.temp, required this.icon});
-
-  String get iconUrl => 'http://openweathermap.org/img/wn/$icon@2x.png';
-
-  factory HourlyWeather.fromJson(Map<String, dynamic> json) => HourlyWeather(
-    time: DateTime.fromMillisecondsSinceEpoch(json['dt'] * 1000),
-    temp: (json['temp'] as num).toDouble(),
-    icon: json['weather'][0]['icon'] ?? '',
-  );
+  factory HourlyWeather.fromJson(Map<String, dynamic> json) {
+    final weather = (json['weather'] as List?)?.firstOrNull;
+    return HourlyWeather(
+      time: DateTime.fromMillisecondsSinceEpoch(
+        (json['dt'] as num).toInt() * 1000,
+      ),
+      temp: (json['temp'] as num).toDouble(),
+      icon: weather?['icon'] as String? ?? '01d',
+      description: weather?['description'] as String? ?? '',
+    );
+  }
 }

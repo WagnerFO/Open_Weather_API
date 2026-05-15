@@ -5,7 +5,21 @@ import 'package:geolocator/geolocator.dart';
 
 final weatherRepositoryProvider = Provider((ref) => WeatherRepository());
 
+final selectedLocationProvider = StateProvider<Map<String, double>?>(
+  (ref) => null,
+);
+
 final WeatherProvider = FutureProvider<WeatherModel>((ref) async {
+  final selectedLocation = ref.watch(selectedLocationProvider);
+  final repo = ref.read(weatherRepositoryProvider);
+
+  if (selectedLocation != null) {
+    return repo.fetchWeather(
+      lat: selectedLocation['lat']!,
+      lon: selectedLocation['lon']!,
+    );
+  }
+
   final permission = await Geolocator.requestPermission();
   if (permission == LocationPermission.denied ||
       permission == LocationPermission.deniedForever) {
@@ -13,7 +27,5 @@ final WeatherProvider = FutureProvider<WeatherModel>((ref) async {
   }
 
   final position = await Geolocator.getCurrentPosition();
-  final repo = ref.read(weatherRepositoryProvider);
-
   return repo.fetchWeather(lat: position.latitude, lon: position.longitude);
 });

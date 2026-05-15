@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
+  print('🔑 API Key carregada: ${dotenv.env['OPENWEATHER_API_KEY']}');
   runApp(const ProviderScope(child: MyApp()));
 }
 
