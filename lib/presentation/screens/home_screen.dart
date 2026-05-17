@@ -3,8 +3,11 @@ import 'package:flutter_application/core/helpers/weather_icon_helper.dart';
 import 'package:flutter_application/data/models/weather_model.dart';
 import 'package:flutter_application/data/repositories/weather_repository.dart';
 import 'package:flutter_application/domain/providers/weather_provider.dart';
+import 'package:flutter_application/presentation/widgets/edge_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+
+final GlobalKey<EdgeMenuState> edgeMenuKey = GlobalKey<EdgeMenuState>();
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -13,11 +16,14 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final weaterAsync = ref.watch(WeatherProvider);
 
-    return Scaffold(
-      body: weaterAsync.when(
-        loading: () => const _LoadingView(),
-        error: (e, _) => _ErrorView(message: e.toString()),
-        data: (weather) => _WeatherView(weather: weather),
+    return EdgeMenu(
+      key: edgeMenuKey,
+      child: Scaffold(
+        body: weaterAsync.when(
+          loading: () => const _LoadingView(),
+          error: (e, _) => _ErrorView(message: e.toString()),
+          data: (weather) => _WeatherView(weather: weather),
+        ),
       ),
     );
   }
@@ -102,15 +108,18 @@ class _WeatherViewState extends State<_WeatherView> {
   }
 }
 
-class _BlueHeader extends StatelessWidget {
+class _BlueHeader extends ConsumerWidget {
   final WeatherModel weather;
   const _BlueHeader({super.key, required this.weather});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final now = DateTime.now();
     final dateStr = DateFormat("EEEE, dd 'de' MMMM", 'pt_BR').format(now);
     final timeStr = DateFormat('HH:mm').format(now);
+    final selectedName = ref.watch(selectedCityNameProvider);
+    final cityName =
+        selectedName ?? weather.timezone.split('/').last.replaceAll('_', ' ');
 
     return Container(
       color: const Color(0xFF1565C0),
@@ -128,7 +137,7 @@ class _BlueHeader extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () {},
+                onPressed: () => edgeMenuKey.currentState?.open(),
               ),
               IconButton(
                 icon: const Icon(Icons.person_outline, color: Colors.white),
@@ -164,7 +173,7 @@ class _BlueHeader extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      weather.timezone.split('/').last.replaceAll('_', ' '),
+                      cityName,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -335,6 +344,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
       'lat': city.lat,
       'lon': city.lon,
     };
+    ref.read(selectedCityNameProvider.notifier).state = city.displayName;
   }
 
   @override
