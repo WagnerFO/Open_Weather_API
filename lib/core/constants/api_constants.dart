@@ -6,10 +6,15 @@ class ApiConstants {
 
   static const String baseUrl = 'https://api.openweathermap.org/data/3.0';
 
-  static String oneCall({required double lat, required double lon}) =>
+  static String oneCall({
+    required double lat,
+    required double lon,
+    String units = 'metric',
+    String lang = 'pt_br',
+  }) =>
       '$baseUrl/onecall?lat=$lat&lon=$lon'
       '&exclude=minutely'
       '&appid=$apiKey'
-      '&units=metric'
-      '&lang=pt_br';
+      '&units=$units'
+      '&lang=$lang';
 }

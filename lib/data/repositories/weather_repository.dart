@@ -32,9 +32,13 @@ class WeatherRepository {
   Future<WeatherModel> fetchWeather({
     required double lat,
     required double lon,
+    String units = 'metric',
+    String lang = 'pt_br',
   }) async {
     try {
-      final response = await _dio.get(ApiConstants.oneCall(lat: lat, lon: lon));
+      final response = await _dio.get(
+        ApiConstants.oneCall(lat: lat, lon: lon, units: units, lang: lang),
+      );
       if (response.statusCode == 200) {
         return WeatherModel.fromJson(response.data);
       }

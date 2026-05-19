@@ -5,6 +5,7 @@ class WeatherModel {
   final CurrentWeather current;
   final List<DailyWeather> daily;
   final List<HourlyWeather> hourly;
+  final List<WeatherAlert> alerts;
 
   WeatherModel({
     required this.lat,
@@ -13,6 +14,7 @@ class WeatherModel {
     required this.current,
     required this.daily,
     required this.hourly,
+    this.alerts = const [],
   });
 
   factory WeatherModel.fromJson(Map<String, dynamic> json) => WeatherModel(
@@ -26,6 +28,11 @@ class WeatherModel {
     hourly: (json['hourly'] as List)
         .map((e) => HourlyWeather.fromJson(e))
         .toList(),
+    alerts: json['alerts'] == null
+        ? []
+        : (json['alerts'] as List)
+              .map((e) => WeatherAlert.fromJson(e))
+              .toList(),
   );
 }
 
@@ -115,4 +122,32 @@ class HourlyWeather {
       description: weather?['description'] as String? ?? '',
     );
   }
+}
+
+class WeatherAlert {
+  final String senderName;
+  final String event;
+  final DateTime start;
+  final DateTime end;
+  final String description;
+
+  WeatherAlert({
+    required this.senderName,
+    required this.event,
+    required this.start,
+    required this.end,
+    required this.description,
+  });
+
+  factory WeatherAlert.fromJson(Map<String, dynamic> json) => WeatherAlert(
+    senderName: json['sender_name'] ?? '',
+    event: json['event'] ?? '',
+    start: DateTime.fromMillisecondsSinceEpoch(
+      (json['start'] as num).toInt() * 1000,
+    ),
+    end: DateTime.fromMillisecondsSinceEpoch(
+      (json['end'] as num).toInt() * 1000,
+    ),
+    description: json['description'] ?? '',
+  );
 }

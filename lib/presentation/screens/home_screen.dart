@@ -139,10 +139,6 @@ class _BlueHeader extends ConsumerWidget {
                 icon: const Icon(Icons.menu, color: Colors.white),
                 onPressed: () => edgeMenuKey.currentState?.open(),
               ),
-              IconButton(
-                icon: const Icon(Icons.person_outline, color: Colors.white),
-                onPressed: () {},
-              ),
             ],
           ),
           Text(
