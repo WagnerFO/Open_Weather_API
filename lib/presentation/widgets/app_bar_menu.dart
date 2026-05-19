@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_application/presentation/widgets/base_screen.dart';
+import 'package:flutter_application/core/navigation/menu_key.dart';
 
 class AppBarMenu extends StatelessWidget implements PreferredSizeWidget {
   final String title;

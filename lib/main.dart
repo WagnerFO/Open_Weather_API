@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/core/navigation/app_router.dart';
+import 'package:flutter_application/core/navigation/menu_key.dart';
 import 'package:flutter_application/core/navigation/navigation_key.dart';
-import 'package:flutter_application/presentation/widgets/base_screen.dart';
 import 'package:flutter_application/presentation/widgets/edge_menu.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

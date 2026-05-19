@@ -99,42 +99,57 @@ class _CityCard extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                cityName,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  cityName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: const TextStyle(color: Colors.white70, fontSize: 13),
-              ),
-            ],
+                const SizedBox(height: 4),
+                Text(
+                  description,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(color: Colors.white70, fontSize: 13),
+                ),
+              ],
+            ),
           ),
-          Row(
-            children: [
-              Icon(
-                WeatherIconHelper.getIcon(icon),
-                color: WeatherIconHelper.getColor(icon),
-                size: 36,
+          const SizedBox(width: 8),
+          Flexible(
+            fit: FlexFit.loose,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    WeatherIconHelper.getIcon(icon),
+                    color: WeatherIconHelper.getColor(icon),
+                    size: 32,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '${temp.round()}°',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 34,
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                '${temp.round()}°',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 40,
-                  fontWeight: FontWeight.w800,
-                  height: 1.0,
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),

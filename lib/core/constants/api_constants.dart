@@ -17,4 +17,8 @@ class ApiConstants {
       '&appid=$apiKey'
       '&units=$units'
       '&lang=$lang';
+
+  static String weatherTileLayer(String layer) =>
+      'https://tile.openweathermap.org/map/$layer/{z}/{x}/{y}.png'
+      '?appid=$apiKey';
 }

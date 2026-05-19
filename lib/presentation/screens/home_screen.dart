@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application/core/navigation/menu_key.dart';
 import 'package:flutter_application/core/helpers/weather_icon_helper.dart';
 import 'package:flutter_application/data/models/weather_model.dart';
 import 'package:flutter_application/data/repositories/weather_repository.dart';
 import 'package:flutter_application/domain/providers/weather_provider.dart';
-import 'package:flutter_application/presentation/widgets/base_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 

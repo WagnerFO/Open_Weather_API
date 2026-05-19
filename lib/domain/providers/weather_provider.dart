@@ -1,5 +1,6 @@
 import 'package:flutter_application/data/models/weather_model.dart';
 import 'package:flutter_application/data/repositories/weather_repository.dart';
+import 'package:flutter_application/domain/providers/history_provider.dart';
 import 'package:flutter_application/domain/providers/settings_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -21,12 +22,26 @@ final weatherProvider = FutureProvider<WeatherModel>((ref) async {
   const lang = 'pt_br';
 
   if (selectedLocation != null) {
-    return repo.fetchWeather(
+    final weather = await repo.fetchWeather(
       lat: selectedLocation['lat']!,
       lon: selectedLocation['lon']!,
       units: units,
       lang: lang,
     );
+
+    final cityName = ref.read(selectedCityNameProvider);
+    if (cityName != null) {
+      ref
+          .read(historyProvider.notifier)
+          .add(
+            name: cityName,
+            lat: selectedLocation['lat']!,
+            lon: selectedLocation['lon']!,
+            weather: weather,
+          );
+    }
+
+    return weather;
   }
 
   final permission = await Geolocator.requestPermission();

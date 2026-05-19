@@ -132,9 +132,9 @@ class _MenuPanel extends StatelessWidget {
             onTap: () => onNavigate(AppRouter.map),
           ),
           _MenuItem(
-            icon: Icons.star_outline,
-            label: 'Favoritos',
-            onTap: () => onNavigate(AppRouter.favorites),
+            icon: Icons.history,
+            label: 'Histórico',
+            onTap: () => onNavigate(AppRouter.history),
           ),
           _MenuItem(
             icon: Icons.notifications_outlined,
