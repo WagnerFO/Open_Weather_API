@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/core/navigation/app_router.dart';
+import 'package:flutter_application/core/navigation/navigation_key.dart';
 
 class EdgeMenu extends StatefulWidget {
   final Widget child;
@@ -13,7 +14,7 @@ class EdgeMenu extends StatefulWidget {
 class EdgeMenuState extends State<EdgeMenu>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Offset> _SlideAnimation;
+  late Animation<Offset> _slideAnimation;
   bool _isOpen = false;
 
   @override
@@ -21,9 +22,9 @@ class EdgeMenuState extends State<EdgeMenu>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 200),
+      duration: const Duration(milliseconds: 280),
     );
-    _SlideAnimation = Tween<Offset>(
+    _slideAnimation = Tween<Offset>(
       begin: const Offset(-1.0, 0.0),
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
@@ -36,14 +37,16 @@ class EdgeMenuState extends State<EdgeMenu>
 
   void close() {
     _controller.reverse().then((_) {
-      setState(() => _isOpen = false);
+      if (mounted) setState(() => _isOpen = false);
     });
   }
 
   void _navigate(String route) {
     close();
     Future.delayed(const Duration(milliseconds: 300), () {
-      if (mounted) Navigator.pushNamed(context, route);
+      if (mounted) {
+        navigatorKey.currentState?.pushNamedAndRemoveUntil(route, (r) => false);
+      }
     });
   }
 
@@ -73,7 +76,7 @@ class EdgeMenuState extends State<EdgeMenu>
             ),
           ),
           SlideTransition(
-            position: _SlideAnimation,
+            position: _slideAnimation,
             child: Align(
               alignment: Alignment.centerLeft,
               child: SizedBox(
@@ -99,6 +102,7 @@ class EdgeMenuState extends State<EdgeMenu>
 class _MenuPanel extends StatelessWidget {
   final VoidCallback onClose;
   final void Function(String route) onNavigate;
+
   const _MenuPanel({required this.onClose, required this.onNavigate});
 
   @override
@@ -170,7 +174,7 @@ class _MenuItem extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.55,
+        width: double.infinity,
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
         decoration: const BoxDecoration(
@@ -182,13 +186,13 @@ class _MenuItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.white, size: 26),
+            Icon(icon, color: Colors.white, size: 22),
             const SizedBox(width: 10),
             Text(
               label,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.w700,
               ),
             ),

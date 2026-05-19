@@ -1,30 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application/core/helpers/weather_icon_helper.dart';
 import 'package:flutter_application/data/models/weather_model.dart';
 import 'package:flutter_application/data/repositories/weather_repository.dart';
 import 'package:flutter_application/domain/providers/weather_provider.dart';
-import 'package:flutter_application/presentation/widgets/edge_menu.dart';
+import 'package:flutter_application/presentation/widgets/base_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-
-final GlobalKey<EdgeMenuState> edgeMenuKey = GlobalKey<EdgeMenuState>();
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final weaterAsync = ref.watch(WeatherProvider);
+    final weatherAsync = ref.watch(weatherProvider);
 
-    return EdgeMenu(
-      key: edgeMenuKey,
-      child: Scaffold(
-        body: weaterAsync.when(
-          loading: () => const _LoadingView(),
-          error: (e, _) => _ErrorView(message: e.toString()),
-          data: (weather) => _WeatherView(weather: weather),
-        ),
-      ),
+    return weatherAsync.when(
+      loading: () => const Scaffold(body: _LoadingView()),
+      error: (e, _) => Scaffold(body: _ErrorView(message: e.toString())),
+      data: (weather) => _WeatherView(weather: weather),
     );
   }
 }
@@ -137,7 +132,7 @@ class _BlueHeader extends ConsumerWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () => edgeMenuKey.currentState?.open(),
+                onPressed: () => menuKey.currentState?.open(),
               ),
             ],
           ),
@@ -289,6 +284,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
   List<CitySuggestion> _suggestions = [];
   bool _loading = false;
   bool _showSuggestions = false;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -304,30 +300,35 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
   Future<void> _onTextChanged(String text) async {
     final trimmed = text.trim();
+    _debounce?.cancel();
 
     if (trimmed.length < 2) {
       setState(() {
         _suggestions = [];
         _showSuggestions = false;
+        _loading = false;
       });
       return;
     }
 
     setState(() => _loading = true);
+    _debounce = Timer(const Duration(milliseconds: 450), () async {
+      await _fetchSuggestions(trimmed);
+    });
+  }
 
+  Future<void> _fetchSuggestions(String text) async {
     try {
       final repo = ref.read(weatherRepositoryProvider);
-      final results = await repo.fetchCitySuggestions(trimmed);
-      print('🔍 Buscando: $trimmed — ${results.length} resultados');
+      final results = await repo.fetchCitySuggestions(text);
       if (mounted) {
         setState(() {
           _suggestions = results;
-          _showSuggestions = results.isNotEmpty;
+          _showSuggestions = results.isNotEmpty && _focusNode.hasFocus;
           _loading = false;
         });
       }
     } catch (e) {
-      print('❌ Erro: $e');
       if (mounted) setState(() => _loading = false);
     }
   }
@@ -345,6 +346,7 @@ class _SearchBarState extends ConsumerState<_SearchBar> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     _focusNode.dispose();
     super.dispose();

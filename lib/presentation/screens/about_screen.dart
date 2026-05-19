@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/presentation/widgets/app_bar_menu.dart';
 
 class AboutScreen extends StatelessWidget {
   const AboutScreen({super.key});
@@ -7,15 +8,7 @@ class AboutScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1565C0),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Sobre',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-        elevation: 0,
-      ),
+      appBar: const AppBarMenu(title: 'Sobre'),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),

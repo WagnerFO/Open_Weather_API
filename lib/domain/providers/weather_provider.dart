@@ -12,7 +12,7 @@ final selectedLocationProvider = StateProvider<Map<String, double>?>(
 
 final selectedCityNameProvider = StateProvider<String?>((ref) => null);
 
-final WeatherProvider = FutureProvider<WeatherModel>((ref) async {
+final weatherProvider = FutureProvider<WeatherModel>((ref) async {
   final selectedLocation = ref.watch(selectedLocationProvider);
   final settings = ref.watch(settingsProvider);
   final repo = ref.read(weatherRepositoryProvider);

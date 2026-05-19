@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/presentation/widgets/app_bar_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_application/domain/providers/settings_provider.dart';
 
@@ -12,19 +13,11 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1565C0),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Configurações',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-        elevation: 0,
-      ),
+      appBar: const AppBarMenu(title: 'Configurações'),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _SectionLabel(label: 'Unidades'),
+          const _SectionLabel(label: 'Unidades'),
           _SettingsCard(
             children: [
               _DropdownRow(
@@ -51,7 +44,7 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          _SectionLabel(label: 'Notificações'),
+          const _SectionLabel(label: 'Notificações'),
           _SettingsCard(
             children: [
               _ToggleRow(

@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application/presentation/widgets/app_bar_menu.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1565C0),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text('Favoritos', style: TextStyle(color: Colors.white)),
-      ),
-      body: const Center(child: Text('Favoritos em breve')),
+    return const Scaffold(
+      appBar: AppBarMenu(title: 'Favoritos'),
+      body: Center(child: Text('Favoritos em breve')),
     );
   }
 }

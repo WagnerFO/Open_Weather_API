@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application/core/helpers/weather_icon_helper.dart';
 import 'package:flutter_application/domain/providers/weather_provider.dart';
+import 'package:flutter_application/presentation/widgets/app_bar_menu.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -9,20 +10,12 @@ class AlertsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final weatherAsync = ref.watch(WeatherProvider);
+    final weatherAsync = ref.watch(weatherProvider);
     final cityName = ref.watch(selectedCityNameProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FA),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF1565C0),
-        iconTheme: const IconThemeData(color: Colors.white),
-        title: const Text(
-          'Alertas',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-        elevation: 0,
-      ),
+      appBar: const AppBarMenu(title: 'Alertas'),
       body: weatherAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: Color(0xFF1565C0)),
@@ -234,11 +227,11 @@ class _AlertCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: const Border(
+                  decoration: const BoxDecoration(
+                    border: Border(
                       left: BorderSide(color: Color(0xFFE53935), width: 4),
                     ),
-                    color: const Color(0xFFFFF8F8),
+                    color: Color(0xFFFFF8F8),
                     borderRadius: BorderRadius.zero,
                   ),
                   child: Row(
