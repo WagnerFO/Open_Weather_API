@@ -74,7 +74,7 @@ class AboutScreen extends StatelessWidget {
               const SizedBox(height: 12),
               const Text(
                 'Wagner Farias \n Clerisson Teixeira \n Matheus Alves '
-                '\n Maria Thaynara \n Filipe de Souza \n Bieroth ',
+                '\n Maria Thaynara \n Felipe Bezerra \n Biehof Dimas ',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 13,

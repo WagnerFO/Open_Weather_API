@@ -1,12 +1,13 @@
 from pathlib import Path
 import textwrap
+import sys
 
 from PIL import Image, ImageDraw, ImageFont
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "docs" / "projeto_openweather_estudo.md"
-OUTPUT = ROOT / "docs" / "OpenWeather_Estudo_Apresentacao.pdf"
+SOURCE = Path(sys.argv[1]) if len(sys.argv) > 1 else ROOT / "docs" / "projeto_openweather_estudo.md"
+OUTPUT = Path(sys.argv[2]) if len(sys.argv) > 2 else ROOT / "docs" / "OpenWeather_Estudo_Apresentacao.pdf"
 
 PAGE_W, PAGE_H = 1240, 1754
 MARGIN_X = 92

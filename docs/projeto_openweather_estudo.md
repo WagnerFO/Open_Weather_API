@@ -1,4 +1,4 @@
-# Open Weather Flutter
+﻿# Open Weather Flutter
 
 Material de estudo e apresentação do projeto
 
@@ -457,3 +457,4 @@ O projeto demonstra a construção de um aplicativo Flutter completo, com integr
 Ele é um bom exemplo acadêmico porque une conceitos importantes de desenvolvimento mobile com um caso de uso real e fácil de entender: consulta climática.
 
 Além disso, a organização em camadas permite que o projeto continue evoluindo com novas funcionalidades sem tornar o código difícil de manter.
+
