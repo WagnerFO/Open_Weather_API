@@ -6,7 +6,7 @@ class AppSettings {
   final bool notifications;
 
   const AppSettings({
-    this.tempUnit = 'C',
+    this.tempUnit = 'C', 
     this.windUnit = 'km/h',
     this.notifications = true,
   });

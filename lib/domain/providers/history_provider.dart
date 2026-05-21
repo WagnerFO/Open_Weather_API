@@ -1,6 +1,6 @@
 import 'package:flutter_application/data/models/weather_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+ 
 class HistoryCity {
   final String name;
   final double lat;

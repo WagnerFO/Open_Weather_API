@@ -11,7 +11,7 @@ class ApiConstants {
     required double lon,
     String units = 'metric',
     String lang = 'pt_br',
-  }) =>
+  }) => 
       '$baseUrl/onecall?lat=$lat&lon=$lon'
       '&exclude=minutely'
       '&appid=$apiKey'

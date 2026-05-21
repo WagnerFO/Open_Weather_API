@@ -14,7 +14,7 @@ class AppRouter {
   static const String settings = '/settings';
   static const String about = '/about';
 
-  static Route<dynamic> generateRoute(RouteSettings settings) {
+  static Route<dynamic> generateRoute(RouteSettings settings) { 
     switch (settings.name) {
       case home:
         return MaterialPageRoute(builder: (_) => const HomeScreen());
